@@ -2,19 +2,18 @@ package com.example.thereallifx;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import net.emirac.lifx.Bulb;
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
     private Intent serviceIntent;
@@ -45,7 +44,11 @@ public class MainActivity extends AppCompatActivity {
                 change(seekBar.getProgress());
             }
         });
-        createButtons();
+        try {
+            createButtons();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     protected void onDestroy() {
@@ -61,22 +64,37 @@ public class MainActivity extends AppCompatActivity {
         serviceIntent.putExtra("sensitivity", sense);
         startForegroundService(serviceIntent);
     }
-    protected void createButtons(){
+    protected void createButtons() throws InterruptedException {
+
+        BulbClass bulbs= new BulbClass(3);
+        bulbs.getNames(MainActivity.class);
+
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         final LinearLayout buttonArray = findViewById(R.id.buttonLayout);
 
-        int numberOfRows = 3;
+        ArrayList <String> names =  BulbNames.bulbNames;
+        Log.d("length", String.valueOf(names.size()));
+
+        int numberOfButtons = names.size();
         int numberOfButtonsPerRow = 2;
+        int numberOfRows = numberOfButtons/numberOfButtonsPerRow + 1;
         int buttonIdNumber = 0;
+
 
         for(int i=0;i<numberOfRows;i++){
             LinearLayout newLine = new LinearLayout(this);
             newLine.setLayoutParams(params);
             newLine.setOrientation(LinearLayout.HORIZONTAL);
             for(int j=0;j<numberOfButtonsPerRow;j++){
+                if (i*2+j==numberOfButtons){
+                    buttonArray.addView(newLine);
+                    return;
+                }
                 Button button=new Button(this);
                 // You can set button parameters here:
+
                 button.setWidth(20);
                 button.setId(buttonIdNumber);
                 button.setLayoutParams(params);
@@ -93,13 +111,6 @@ public class MainActivity extends AppCompatActivity {
                 buttonIdNumber++;
             }
             buttonArray.addView(newLine);
-
         }
     }
-
-
-
-
-
-
 }

@@ -5,18 +5,10 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-
-
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -49,7 +41,6 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
         final int sensitivity = intent.getIntExtra("sensitivity", 1500);
-        Log.d("started", "started");
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
@@ -73,13 +64,12 @@ public class MainService extends Service {
                                           //Send an int to the bulbstuff method to tell it exactly what to do
 
 
-                                          if (tx * tx + ty * ty + tz * tz > sensitivity) {
+                                          if (ty*ty+tx*tx+tz*tz>sensitivity){
                                               accelerometer.unregister();
                                               try {
                                                   Object lock = MainService.class;
-                                                  BulbClass bulb = new BulbClass();
+                                                  BulbClass bulb = new BulbClass(3);
                                                   int y = bulb.bulbStuff(lock);
-                                                  Log.d("returned", String.valueOf(y));
                                               } catch (Exception e) {
                                                   e.printStackTrace();
                                               }
@@ -87,13 +77,10 @@ public class MainService extends Service {
                                               accelerometer.register();
                                           }
                                       }
-
                                   }
         );
         return START_STICKY;
     }
-
-
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
