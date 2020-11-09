@@ -1,8 +1,13 @@
 package com.example.thereallifx;
 
+import android.content.SharedPreferences;
+
+
 import net.emirac.lifx.*;
 import net.emirac.lifx.BulbScanner.BulbScannerCallback;
 import java.util.ArrayList;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class BulbClass {
     private BulbScanner bulbScanner = BulbScanner.getInstance();

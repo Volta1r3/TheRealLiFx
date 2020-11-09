@@ -8,7 +8,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -40,45 +39,46 @@ public class MainService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+
         final int sensitivity = intent.getIntExtra("sensitivity", 1500);
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        final Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Foreground Service")
                 .setContentText(String.valueOf(sensitivity))
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentIntent(pendingIntent)
                 .build();
-        startForeground(1, notification);
-
-        accelerometer = new Accelerometer(getBaseContext());
-        accelerometer.register();
-        accelerometer.setListener(new Accelerometer.Listener() {
-                                      @Override
-                                      public void onTranslation(float tx, float ty, float tz) throws TimeoutException, InterruptedException {
 
 
-                                          //Adding more than just on/off. just gonna use switch/case for different x y and z accelerations.
-                                          //Send an int to the bulbstuff method to tell it exactly what to do
-
-
-                                          if (ty*ty+tx*tx+tz*tz>sensitivity){
-                                              accelerometer.unregister();
-                                              try {
-                                                  Object lock = MainService.class;
-                                                  BulbClass bulb = new BulbClass(3);
-                                                  int y = bulb.bulbStuff(lock);
-                                              } catch (Exception e) {
-                                                  e.printStackTrace();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startForeground(1, notification);
+                accelerometer = new Accelerometer(getBaseContext());
+                accelerometer.register();
+                accelerometer.setListener(new Accelerometer.Listener() {
+                                              @Override
+                                              public void onTranslation(float tx, float ty, float tz) throws TimeoutException, InterruptedException {
+                                                  if (ty*ty+tx*tx+tz*tz>sensitivity){
+                                                      Object lock = this;
+                                                      accelerometer.unregister();
+                                                      try {
+                                                          BulbClass bulb = new BulbClass(3);
+                                                          int y = bulb.bulbStuff(lock);
+                                                      } catch (Exception e) {
+                                                          e.printStackTrace();
+                                                      }
+                                                      accelerometer.register();
+                                                  }
                                               }
-                                              Thread.sleep(5000);
-                                              accelerometer.register();
                                           }
-                                      }
-                                  }
-        );
+                );
+            }
+        });
+        thread.start();
         return START_STICKY;
     }
     private void createNotificationChannel() {

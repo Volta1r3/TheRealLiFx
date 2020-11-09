@@ -3,6 +3,7 @@ package com.example.thereallifx;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,7 +14,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-
 
 public class MainActivity extends AppCompatActivity {
     private Intent serviceIntent;
@@ -74,8 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         final LinearLayout buttonArray = findViewById(R.id.buttonLayout);
 
-        ArrayList <String> names =  BulbNames.bulbNames;
-        Log.d("length", String.valueOf(names.size()));
+        final ArrayList <String> names =  BulbNames.bulbNames;
 
         int numberOfButtons = names.size();
         int numberOfButtonsPerRow = 2;
@@ -93,17 +92,28 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 Button button=new Button(this);
-                // You can set button parameters here:
 
                 button.setWidth(20);
                 button.setId(buttonIdNumber);
                 button.setLayoutParams(params);
-                button.setText("Button Name");
+                button.setText(names.get(i*2+j));
+                final int finalI = i;
+                final int finalJ = j;
                 button.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
-                        TextView testing = findViewById(R.id.textView2);
-                        if (testing.getText()=="yay"){ testing.setText("nah");}
-                        else{ testing.setText("yay"); }
+                        SharedPreferences preferences = getSharedPreferences("prefName", MODE_PRIVATE);
+                        SharedPreferences.Editor edit = preferences.edit();
+                        if (preferences.contains(names.get(finalI *2+ finalJ))){
+                            edit.remove(names.get(finalI *2+ finalJ));
+                            edit.commit();
+                            Log.d("removed", "removed");
+                        }
+                        else {
+                            edit.putString(names.get(finalI *2+ finalJ), "don't touch");
+                            Log.d("don't touch", "don't touch");
+                            edit.commit();
+                        }
+
                     }
                 });
 
