@@ -2,6 +2,8 @@ package com.example.thereallifx;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -12,6 +14,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+/**
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;**/
 
 import java.util.ArrayList;
 
@@ -49,6 +56,23 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        /**MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });**/
+        Button settingsButton = findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Context context = getApplicationContext();
+                Intent intent = new Intent(context, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+
     }
     @Override
     protected void onDestroy() {
@@ -91,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                     buttonArray.addView(newLine);
                     return;
                 }
-                Button button=new Button(this);
+                final Button button=new Button(this);
 
                 button.setWidth(20);
                 button.setId(buttonIdNumber);
@@ -99,6 +123,15 @@ public class MainActivity extends AppCompatActivity {
                 button.setText(names.get(i*2+j));
                 final int finalI = i;
                 final int finalJ = j;
+                SharedPreferences preferences = getSharedPreferences("prefName", MODE_PRIVATE);
+                if (preferences.contains(names.get(finalI *2+ finalJ))){
+                    button.setBackgroundResource(R.drawable.color_true);
+                }
+                else {
+                    button.setBackgroundResource(R.drawable.color_null);
+                }
+
+
                 button.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
                         SharedPreferences preferences = getSharedPreferences("prefName", MODE_PRIVATE);
@@ -107,11 +140,13 @@ public class MainActivity extends AppCompatActivity {
                             edit.remove(names.get(finalI *2+ finalJ));
                             edit.commit();
                             Log.d("removed", "removed");
+                            button.setBackgroundResource(R.drawable.color_null);
                         }
                         else {
                             edit.putString(names.get(finalI *2+ finalJ), "don't touch");
                             Log.d("don't touch", "don't touch");
                             edit.commit();
+                            button.setBackgroundResource(R.drawable.color_true);
                         }
 
                     }

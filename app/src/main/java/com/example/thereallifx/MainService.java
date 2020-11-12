@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
@@ -40,6 +41,7 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
+        final SharedPreferences preferences = getSharedPreferences("prefName", MODE_PRIVATE);
         final int sensitivity = intent.getIntExtra("sensitivity", 1500);
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -51,7 +53,6 @@ public class MainService extends Service {
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentIntent(pendingIntent)
                 .build();
-
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -67,7 +68,7 @@ public class MainService extends Service {
                                                       accelerometer.unregister();
                                                       try {
                                                           BulbClass bulb = new BulbClass(3);
-                                                          int y = bulb.bulbStuff(lock);
+                                                          int y = bulb.bulbStuff(lock, preferences);
                                                       } catch (Exception e) {
                                                           e.printStackTrace();
                                                       }

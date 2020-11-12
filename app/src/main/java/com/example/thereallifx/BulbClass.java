@@ -1,13 +1,9 @@
 package com.example.thereallifx;
 
 import android.content.SharedPreferences;
-
-
 import net.emirac.lifx.*;
 import net.emirac.lifx.BulbScanner.BulbScannerCallback;
 import java.util.ArrayList;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class BulbClass {
     private BulbScanner bulbScanner = BulbScanner.getInstance();
@@ -18,7 +14,7 @@ public class BulbClass {
         numBulbs = bulbs;
     }
 
-    public int bulbStuff(final Object thread) throws InterruptedException {
+    public int bulbStuff(final Object thread, final SharedPreferences preferences) throws InterruptedException {
         bulbScanner.addCallback(new BulbScannerCallback() {
             @Override
             public void onError(String arg0) {
@@ -36,6 +32,15 @@ public class BulbClass {
             public void onNewBulb(net.emirac.lifx.Bulb arg0) {
                 bulbCount++;
                 try {
+                    if (preferences.contains(arg0.getLabel())){
+                        if (numBulbs == bulbCount) {
+                            synchronized (thread) {
+                                numBulbs = 0;
+                                thread.notify();
+                            }
+                        }
+                        return;
+                    }
                     boolean power = arg0.getPower();
                         if (power == true) {
                             arg0.setPower(false, 0);}
@@ -69,11 +74,8 @@ public class BulbClass {
             numBulbs = 0;
             return 0;
         }
-
     }
-
     public void getNames(final Object thread) throws InterruptedException {
-
         final ArrayList<String> names = new ArrayList<String>();
         bulbScanner.addCallback(new BulbScannerCallback() {
             @Override
