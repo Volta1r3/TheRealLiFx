@@ -63,6 +63,7 @@ public class BulbClass {
             }
         });
         synchronized (thread) {
+            bulbCount=0;
             bulbScanner.start();
             thread.wait(5000);
             if (numBulbs != bulbCount) {
@@ -80,6 +81,7 @@ public class BulbClass {
         bulbScanner.addCallback(new BulbScannerCallback() {
             @Override
             public void onNewBulb(Bulb bulb) {
+                bulbCount++;
                 try {
                     names.add(bulb.getLabel());
                     if (numBulbs == bulbCount) {
@@ -111,6 +113,7 @@ public class BulbClass {
             }
         });
         synchronized (thread){
+            bulbCount=0;
             bulbScanner.start();
             thread.wait(5000);
             if (numBulbs != bulbCount){
