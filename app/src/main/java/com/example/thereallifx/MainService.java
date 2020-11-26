@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -19,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 public class MainService extends Service {
     Accelerometer accelerometer;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
+    public static boolean isRunning = false;
 
     @Nullable
     @Override
@@ -30,6 +33,7 @@ public class MainService extends Service {
     public void onDestroy() {
         super.onDestroy();
         accelerometer.unregister();
+        isRunning = false;
     }
 
     @Override
@@ -40,8 +44,8 @@ public class MainService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-
-        final SharedPreferences preferences = getSharedPreferences("prefName", MODE_PRIVATE);
+        isRunning = true;
+        final SharedPreferences preferences = getSharedPreferences("pref_name", MODE_PRIVATE);
         final int sensitivity = intent.getIntExtra("sensitivity", 1500);
         createNotificationChannel();
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -67,7 +71,9 @@ public class MainService extends Service {
                                                       Object lock = this;
                                                       accelerometer.unregister();
                                                       try {
-                                                          BulbClass bulb = new BulbClass(3);
+                                                          int bulbs = preferences.getInt("number_bulbs", 3);
+                                                          Log.d("picking number of bulbs", String.valueOf(bulbs));
+                                                          BulbClass bulb = new BulbClass(bulbs);
                                                           int y = bulb.bulbStuff(lock, preferences);
                                                       } catch (Exception e) {
                                                           e.printStackTrace();
